@@ -1,0 +1,39 @@
+name: Android bouwen
+
+# Bouwt de Android-app (APK) en zet hem als download op GitHub:
+# https://github.com/vercocomputers-beep/verco-telefoon-app/releases/download/android-test/VercoTelefoon.apk
+on:
+  push:
+    branches: [main]
+    paths: ["android/**", ".github/workflows/android.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: APK bouwen
+        working-directory: android
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+          cp app/build/outputs/apk/release/app-release.apk ../VercoTelefoon.apk
+      - name: Als download zetten (android-test)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view android-test >/dev/null 2>&1 || gh release create android-test --prerelease \
+            --title "Android testversie" --notes "Testversie van Verco Telefoon voor Android. Installeren: open de link op de telefoon en sta 'Installeren uit onbekende bronnen' toe."
+          gh release upload android-test VercoTelefoon.apk --clobber
+          gh release edit android-test --notes "Testversie van Verco Telefoon voor Android (build ${{ github.run_number }}, $(date -u +'%Y-%m-%d %H:%M') UTC). Installeren: open de link op de telefoon en sta 'Installeren uit onbekende bronnen' toe."

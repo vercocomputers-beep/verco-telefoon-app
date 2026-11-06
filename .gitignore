@@ -66,3 +66,10 @@ VercoTelefoon.xcodeproj/
 App/Info.plist
 build.log
 Packages/linphone-sdk/
+
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+*.apk

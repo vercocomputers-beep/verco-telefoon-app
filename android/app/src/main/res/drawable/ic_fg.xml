@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Verco-logo: witte hoorn met turquoise golfjes (108dp, veilige zone 66dp in het midden) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="24" android:viewportHeight="24">
+    <group android:scaleX="0.6" android:scaleY="0.6" android:pivotX="12" android:pivotY="12">
+        <group android:translateX="1.2" android:translateY="2.2" android:scaleX="0.86" android:scaleY="0.86">
+            <path android:fillColor="#FFFFFF"
+                android:pathData="M7.6,10.8a12,12 0,0 0,5.6 5.6l1.9,-1.9c0.2,-0.2 0.6,-0.3 0.9,-0.2 1,0.3 2,0.5 3.1,0.5 0.5,0 0.9,0.4 0.9,0.9v3c0,0.5 -0.4,0.9 -0.9,0.9A15.6,15.6 0,0 1,3.4 4.9c0,-0.5 0.4,-0.9 0.9,-0.9h3c0.5,0 0.9,0.4 0.9,0.9 0,1.1 0.2,2.1 0.5,3.1 0.1,0.3 0,0.7 -0.2,0.9z" />
+        </group>
+        <path android:strokeColor="#4FD1C5" android:strokeWidth="1.7" android:strokeLineCap="round"
+            android:pathData="M14.2,3.6a6.6,6.6 0,0 1,6.2 6.2M14.2,7a3.3,3.3 0,0 1,2.8 2.8" />
+    </group>
+</vector>

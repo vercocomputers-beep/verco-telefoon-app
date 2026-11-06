@@ -3,6 +3,7 @@ name: iOS bouwen (controle)
 on:
   push:
     branches: [main]
+    paths-ignore: ["android/**", ".github/workflows/android.yml", "docs/**"]
   workflow_dispatch:
 
 jobs:

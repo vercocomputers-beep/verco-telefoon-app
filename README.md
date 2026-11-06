@@ -21,7 +21,7 @@ met push voor inkomende oproepen.
 | Recent (inkomend, uitgaand, gemist, terugbellen), voicemailteller (MWI), doorverbinden, instellingen verversen | gebouwd |
 | App-icoon (Verco-logo) en accentkleur | gebouwd |
 | TestFlight-workflow, privacymanifest, privacyverklaring, App Store-teksten, instellink plakken (voor App Review) | gebouwd (0.6) |
-| Android-versie | later |
+| Android-versie 0.1 (map `android/`): QR/instellink, bellen, Recent, collega's met lampje, contacten, functies, voicemailteller, doorverbinden, achtergronddienst met melding bij inkomend gesprek | gebouwd; download: https://github.com/vercocomputers-beep/verco-telefoon-app/releases/download/android-test/VercoTelefoon.apk |
 
 ## Hoe het gebouwd wordt
 
@@ -49,7 +49,8 @@ open VercoTelefoon.xcodeproj
 | `App/Sources/Phone` | bellen via liblinphone (`PhoneManager`) en CallKit (`CallKitManager`) |
 | `App/Resources` | app-icoon en kleuren (Assets.xcassets) |
 | `App/Sources/Views` | schermen |
-| `.github/workflows` | bouwcontrole in GitHub Actions |
+| `.github/workflows` | bouwcontrole iOS, TestFlight, Android-APK |
+| `android/` | Android-app (Kotlin, Jetpack Compose, liblinphone 5.5.39 via Maven). Bouwen: `cd android && ./gradlew assembleRelease` |
 | `scripts/linphone-sdk.sh` | haalt de Linphone-bouwdoos op (vaste versie) naar `Packages/linphone-sdk` |
 
 ## Afspraken met de centrale
