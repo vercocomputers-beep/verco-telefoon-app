@@ -23,8 +23,8 @@ targets:
       path: App/Info.plist
       properties:
         CFBundleDisplayName: Verco Telefoon
-        CFBundleShortVersionString: "0.2.0"
-        CFBundleVersion: "2"
+        CFBundleShortVersionString: "0.3.0"
+        CFBundleVersion: "3"
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         UIBackgroundModes: [audio, voip]

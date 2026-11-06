@@ -7,7 +7,7 @@ met push voor inkomende oproepen.
 
 ## Status
 
-**Versie 0.2 (fase 2 van het plan).** Bouwt in GitHub Actions; nog niet getest op een iPhone (wacht op het Apple-account).
+**Versie 0.3 (fase 2 van het plan).** Bouwt in GitHub Actions; nog niet getest op een iPhone (wacht op het Apple-account).
 
 | Onderdeel | Stand |
 |---|---|
@@ -17,7 +17,7 @@ met push voor inkomende oproepen.
 | Kiesscherm, gespreksscherm (stil, luidspreker, toetsen), contacten, functies (★), instellingen | gebouwd |
 | Gesprekken als normaal iPhone-gesprek (CallKit: vergrendelscherm, Recent, knoppen van iOS) | gebouwd |
 | Overgaan als de app dicht is (PushKit + push vanuit de centrale) | volgt (Apple-account nodig) |
-| Collega's met lampje (presence/BLF) | volgt |
+| Collega's met lampje (presence: vrij, in gesprek, niet storen; centrale 2.94+) | gebouwd |
 | App-icoon (Verco-logo) en accentkleur | gebouwd |
 | Android-versie | later |
 
@@ -52,7 +52,7 @@ open VercoTelefoon.xcodeproj
 ## Afspraken met de centrale
 
 - QR-code bij Gebruiker → App (instelling *Eigen app Verco Telefoon (test)* aan): `verco-telefoon://setup?s=<adres centrale>&u=<app-gebruiker>&p=<app-wachtwoord>`
-- `GET <adres centrale>/prov/vt?u=…&p=…` geeft JSON: `version`, `company`, `user{name, extension}`, `sip{username, password, domain, port, transport}`, `voicemail`, `video`, `codecs`, `phonebook` (vCard-link), `functions[{name, code}]`, `push{enabled}`.
+- `GET <adres centrale>/prov/vt?u=…&p=…` geeft JSON: `version`, `company`, `user{name, extension}`, `sip{username, password, domain, port, transport}`, `voicemail`, `video`, `codecs`, `phonebook` (vCard-link), `functions[{name, code}]`, `push{enabled}`, `colleagues[{name, extension}]` (vanaf 2.94).
 
 ## Licentie
 

@@ -29,6 +29,17 @@ struct ProvisioningConfig: Codable, Equatable {
         var enabled: Bool
     }
 
+    /// Collega's voor de lampjes (vanaf centrale 2.94).
+    struct Colleague: Codable, Equatable, Identifiable, Hashable {
+        var name: String
+        var ext: String
+        var id: String { ext }
+        enum CodingKeys: String, CodingKey {
+            case name
+            case ext = "extension"
+        }
+    }
+
     var version: Int
     var company: String
     var user: User
@@ -39,6 +50,7 @@ struct ProvisioningConfig: Codable, Equatable {
     var phonebook: String
     var functions: [Function]
     var push: Push?
+    var colleagues: [Colleague]?
 
     /// Server waar de instellingen vandaan kwamen (om later te verversen).
     var source: String?

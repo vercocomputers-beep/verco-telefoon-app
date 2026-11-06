@@ -20,6 +20,11 @@ final class PhoneManager: ObservableObject {
         }
     }
 
+    /// Lampje van een collega (via presence op zijn toestelnummer).
+    enum Presence: Equatable {
+        case unknown, available, busy, dnd, offline
+    }
+
     enum CallPhase: Equatable {
         case none, incoming, outgoing, ringing, active, ended
     }
@@ -31,6 +36,9 @@ final class PhoneManager: ObservableObject {
     @Published private(set) var connectedAt: Date?
     @Published var muted = false
     @Published var speaker = false
+    /// Lampjes van collega's, per toestelnummer.
+    @Published private(set) var presence: [String: Presence] = [:]
+    private var friendList: FriendList?
 
     private var core: Core?
     private var delegate: Delegate?
@@ -72,6 +80,7 @@ final class PhoneManager: ObservableObject {
             self.core = core
             startedFor = cfg.sip
             status = .connecting
+            watchColleagues(cfg.colleagues ?? [], core: core)
         } catch {
             status = .failed(error.localizedDescription)
         }
@@ -86,6 +95,8 @@ final class PhoneManager: ObservableObject {
         }
         core = nil
         delegate = nil
+        friendList = nil
+        presence = [:]
         startedFor = nil
         status = .off
         phase = .none
@@ -164,6 +175,39 @@ final class PhoneManager: ObservableObject {
         try? call.sendDtmf(dtmf: CChar(bitPattern: v))
     }
 
+    // MARK: lampjes van collega's
+
+    /// Voor elke collega een abonnement op zijn status (SUBSCRIBE presence bij de centrale).
+    private func watchColleagues(_ list: [ProvisioningConfig.Colleague], core: Core) {
+        guard !list.isEmpty, let fl = try? core.createFriendList() else { return }
+        fl.displayName = "Collega's"
+        for c in list {
+            guard let f = try? core.createFriend(),
+                  let addr = try? Factory.Instance.createAddress(addr: "sip:\(c.ext)@\(domain)") else { continue }
+            try? f.setName(newValue: c.name)
+            f.addAddress(address: addr)
+            try? f.setSubscribesenabled(newValue: true)
+            try? f.setIncsubscribepolicy(newValue: .SPDeny)
+            _ = fl.addFriend(linphoneFriend: f)
+            presence[c.ext] = .unknown
+        }
+        core.addFriendList(list: fl)
+        fl.subscriptionsEnabled = true
+        fl.updateSubscriptions()
+        friendList = fl
+    }
+
+    fileprivate func presenceChanged(_ friend: Friend) {
+        guard let ext = friend.address?.username else { return }
+        switch friend.consolidatedPresence {
+        case .Online: presence[ext] = .available
+        case .Busy: presence[ext] = .busy
+        case .DoNotDisturb: presence[ext] = .dnd
+        case .Offline: presence[ext] = .offline
+        @unknown default: presence[ext] = .unknown
+        }
+    }
+
     // MARK: gebeurtenissen van liblinphone
 
     fileprivate func registrationChanged(_ state: RegistrationState, _ message: String) {
@@ -220,5 +264,9 @@ private final class Delegate: CoreDelegate {
 
     func onCallStateChanged(core: Core, call: Call, state: Call.State, message: String) {
         Task { @MainActor in self.owner?.callChanged(call, state) }
+    }
+
+    func onNotifyPresenceReceived(core: Core, linphoneFriend: Friend) {
+        Task { @MainActor in self.owner?.presenceChanged(linphoneFriend) }
     }
 }
