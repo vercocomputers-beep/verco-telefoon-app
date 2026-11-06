@@ -12,6 +12,10 @@ final class CallKitManager: NSObject, CXProviderDelegate {
     /// CallKit-nummer van het lopende gesprek (de app ondersteunt één gesprek tegelijk).
     private(set) var currentUUID: UUID?
     private var outgoing = false
+    /// Gemeld via een pushbericht; het echte gesprek (INVITE) komt zo binnen.
+    private var pushPending = false
+    /// Al opgenomen voordat het echte gesprek binnen was.
+    private var earlyAnswer = false
     weak var phone: PhoneManager?
 
     override init() {
@@ -42,8 +46,57 @@ final class CallKitManager: NSObject, CXProviderDelegate {
         }
     }
 
+    /// Pushbericht van de centrale: direct een inkomend gesprek melden (eis van iOS), met de naam uit het bericht.
+    func reportIncomingFromPush(payload: String) {
+        guard currentUUID == nil else { return }
+        var number = "", name = ""
+        if let data = payload.data(using: .utf8),
+           let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+            number = obj["caller"] as? String ?? ""
+            name = obj["name"] as? String ?? ""
+        }
+        let uuid = UUID()
+        currentUUID = uuid
+        outgoing = false
+        pushPending = true
+        earlyAnswer = false
+        provider.reportNewIncomingCall(with: uuid, update: update(name: name, number: number)) { _ in }
+        // komt het gesprek niet binnen (beller heeft al opgehangen), dan na 15 seconden weer weghalen
+        DispatchQueue.main.asyncAfter(deadline: .now() + 15) { [weak self] in
+            guard let self, self.pushPending, self.currentUUID == uuid else { return }
+            self.pushPending = false
+            self.currentUUID = nil
+            self.provider.reportCall(with: uuid, endedAt: Date(), reason: .unanswered)
+        }
+    }
+
+    /// Opgenomen vóór het gesprek binnen was? Dan nu alsnog aannemen (eenmalig).
+    func takeEarlyAnswer() -> Bool {
+        let v = earlyAnswer
+        earlyAnswer = false
+        return v
+    }
+
+    private func update(name: String, number: String) -> CXCallUpdate {
+        let u = CXCallUpdate()
+        u.remoteHandle = CXHandle(type: .phoneNumber, value: number.isEmpty ? "?" : number)
+        u.localizedCallerName = name.isEmpty ? (number.isEmpty ? "Verco Telefoon" : number) : name
+        u.hasVideo = false
+        u.supportsDTMF = true
+        u.supportsHolding = false
+        u.supportsGrouping = false
+        u.supportsUngrouping = false
+        return u
+    }
+
     /// Inkomend gesprek melden aan iOS (iOS laat de telefoon overgaan).
     func reportIncoming(name: String, number: String) {
+        if pushPending, let uuid = currentUUID {
+            // al gemeld via het pushbericht: alleen naam en nummer bijwerken
+            pushPending = false
+            provider.reportCall(with: uuid, updated: update(name: name, number: number))
+            return
+        }
         let uuid = UUID()
         currentUUID = uuid
         outgoing = false
@@ -99,7 +152,7 @@ final class CallKitManager: NSObject, CXProviderDelegate {
     }
 
     func callEnded(failed: Bool) {
-        guard let uuid = currentUUID else { return }
+        guard let uuid = currentUUID, !pushPending else { return }
         currentUUID = nil
         provider.reportCall(with: uuid, endedAt: Date(), reason: failed ? .failed : .remoteEnded)
     }
@@ -122,6 +175,7 @@ final class CallKitManager: NSObject, CXProviderDelegate {
     }
 
     func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
+        if pushPending { earlyAnswer = true }
         Task { @MainActor in
             self.phone?.configureAudio()
             self.phone?.acceptDirect()

@@ -27,6 +27,11 @@ struct ProvisioningConfig: Codable, Equatable {
 
     struct Push: Codable, Equatable {
         var enabled: Bool
+        var teamId: String?
+        enum CodingKeys: String, CodingKey {
+            case enabled
+            case teamId = "team_id"
+        }
     }
 
     /// Collega's voor de lampjes (vanaf centrale 2.94).

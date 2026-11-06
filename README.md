@@ -7,7 +7,7 @@ met push voor inkomende oproepen.
 
 ## Status
 
-**Versie 0.4 (fase 2 van het plan).** Bouwt in GitHub Actions; nog niet getest op een iPhone (wacht op het Apple-account).
+**Versie 0.5 (fase 2 van het plan).** Bouwt in GitHub Actions; nog niet getest op een iPhone (wacht op het Apple-account).
 
 | Onderdeel | Stand |
 |---|---|
@@ -16,7 +16,7 @@ met push voor inkomende oproepen.
 | Aanmelden en bellen via liblinphone (Linphone-bouwdoos) | gebouwd |
 | Kiesscherm, gespreksscherm (stil, luidspreker, toetsen), contacten, functies (★), instellingen | gebouwd |
 | Gesprekken als normaal iPhone-gesprek (CallKit: vergrendelscherm, Recent, knoppen van iOS) | gebouwd |
-| Overgaan als de app dicht is (PushKit + push vanuit de centrale) | volgt (Apple-account nodig) |
+| Overgaan als de app dicht is: PushKit via de bouwdoos, pushsleutel in het Contact-adres, centrale (2.98+) stuurt de VoIP-push vóór het bellen | gebouwd, testen wacht op het Apple-account |
 | Collega's met lampje (presence: vrij, in gesprek, niet storen; centrale 2.94+) | gebouwd |
 | Recent (inkomend, uitgaand, gemist, terugbellen), voicemailteller (MWI), doorverbinden, instellingen verversen | gebouwd |
 | App-icoon (Verco-logo) en accentkleur | gebouwd |
@@ -53,7 +53,7 @@ open VercoTelefoon.xcodeproj
 ## Afspraken met de centrale
 
 - QR-code bij Gebruiker → App (instelling *Eigen app Verco Telefoon (test)* aan): `verco-telefoon://setup?s=<adres centrale>&u=<app-gebruiker>&p=<app-wachtwoord>`
-- `GET <adres centrale>/prov/vt?u=…&p=…` geeft JSON: `version`, `company`, `user{name, extension}`, `sip{username, password, domain, port, transport}`, `voicemail`, `video`, `codecs`, `phonebook` (vCard-link), `functions[{name, code}]`, `push{enabled}`, `colleagues[{name, extension}]` (vanaf 2.94).
+- `GET <adres centrale>/prov/vt?u=…&p=…` geeft JSON: `version`, `company`, `user{name, extension}`, `sip{username, password, domain, port, transport}`, `voicemail`, `video`, `codecs`, `phonebook` (vCard-link), `functions[{name, code}]`, `push{enabled}`, `colleagues[{name, extension}]` (vanaf 2.94), `push{enabled, team_id}` (2.98).
 
 ## Licentie
 

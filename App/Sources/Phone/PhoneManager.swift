@@ -58,6 +58,13 @@ final class PhoneManager: ObservableObject {
             let factory = Factory.Instance
             let core = try factory.createCore(configPath: "", factoryConfigPath: "", systemContext: nil)
             core.callkitEnabled = true          // geluid wordt geregeld via CallKit (activateAudio)
+            let push = cfg.push?.enabled == true
+            if push {
+                // de bouwdoos regelt PushKit zelf en zet de pushsleutel in het Contact-adres (pn-prid)
+                core.pushNotificationConfig?.teamId = cfg.push?.teamId
+                core.pushNotificationConfig?.bundleIdentifier = Bundle.main.bundleIdentifier
+            }
+            core.pushNotificationEnabled = push
             CallKitManager.shared.phone = self
             core.videoCaptureEnabled = false
             core.videoDisplayEnabled = false
@@ -73,6 +80,7 @@ final class PhoneManager: ObservableObject {
             try server.setTransport(newValue: sip.transport.lowercased() == "tcp" ? .Tcp : .Udp)
             try params.setServeraddress(newValue: server)
             params.registerEnabled = true
+            params.pushNotificationAllowed = cfg.push?.enabled == true
             voicemailCode = cfg.voicemail
             if !cfg.voicemail.isEmpty {
                 // voicemailteller: abonnement op 'message-summary' bij de centrale
@@ -276,6 +284,10 @@ final class PhoneManager: ObservableObject {
         case .IncomingReceived:
             phase = .incoming
             CallKitManager.shared.reportIncoming(name: remoteName, number: remoteNumber)
+            if CallKitManager.shared.takeEarlyAnswer() {   // al opgenomen op het vergrendelscherm vóór het gesprek binnen was
+                configureAudio()
+                acceptDirect()
+            }
         case .OutgoingInit, .OutgoingProgress: phase = .outgoing
         case .OutgoingRinging, .OutgoingEarlyMedia: phase = .ringing
         case .Connected, .StreamsRunning:
@@ -319,6 +331,12 @@ private final class Delegate: CoreDelegate {
 
     func onNotifyPresenceReceived(core: Core, linphoneFriend: Friend) {
         Task { @MainActor in self.owner?.presenceChanged(linphoneFriend) }
+    }
+
+    /// Pushbericht van de centrale (app was dicht): meteen aan iOS melden, anders stopt iOS de app.
+    /// Bewust zonder omweg via een Task: dit moet nog binnen de afhandeling van het pushbericht gebeuren.
+    func onPushNotificationReceived(core: Core, payload: String) {
+        CallKitManager.shared.reportIncomingFromPush(payload: payload)
     }
 
     func onMessageWaitingIndicationChanged(core: Core, lev: Event, mwi: MessageWaitingIndication) {
