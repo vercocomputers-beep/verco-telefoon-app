@@ -32,6 +32,7 @@ Op een Mac zelf bouwen:
 
 ```
 brew install xcodegen
+bash scripts/linphone-sdk.sh
 xcodegen generate
 open VercoTelefoon.xcodeproj
 ```
@@ -45,6 +46,7 @@ open VercoTelefoon.xcodeproj
 | `App/Sources/Phone` | bellen via liblinphone (`PhoneManager`) |
 | `App/Sources/Views` | schermen |
 | `.github/workflows` | bouwcontrole in GitHub Actions |
+| `scripts/linphone-sdk.sh` | haalt de Linphone-bouwdoos op (vaste versie) naar `Packages/linphone-sdk` |
 
 ## Afspraken met de centrale
 

@@ -10,9 +10,11 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: XcodeGen installeren
         run: brew install xcodegen
+      - name: Linphone-bouwdoos ophalen
+        run: bash scripts/linphone-sdk.sh
       - name: Xcode-project maken
         run: xcodegen generate
       - name: Bouwen voor de simulator (zonder ondertekening)

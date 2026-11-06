@@ -1,13 +1,14 @@
-# Xcode-project wordt op de Mac (of in GitHub Actions) gemaakt met XcodeGen:  xcodegen generate
+# Xcode-project wordt op de Mac (of in GitHub Actions) gemaakt met XcodeGen:
+#   bash scripts/linphone-sdk.sh && xcodegen generate
 name: VercoTelefoon
 options:
   bundleIdPrefix: org.verco
   deploymentTarget:
     iOS: "16.0"
 packages:
+  # lokale kopie, opgehaald met scripts/linphone-sdk.sh (vaste versie, zie dat script)
   linphonesw:
-    url: https://gitlab.linphone.org/BC/public/linphone-sdk-swift-ios.git
-    branch: stable
+    path: Packages/linphone-sdk
 targets:
   VercoTelefoon:
     type: application
