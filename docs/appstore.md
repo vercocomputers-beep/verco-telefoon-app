@@ -48,11 +48,37 @@ Adres wordt: `https://vercocomputers-beep.github.io/verco-telefoon-app/privacy/`
 
 ## Notitie voor Apple (App Review)
 
-> Verco Telefoon is a business softphone for companies that use a Verco Voip Centrale (Asterisk-based PBX).
-> Accounts are provisioned by the company's administrator with a QR code. For review, open the demo setup link below
-> on the device (or copy it and tap "Instellink plakken" in the app). The demo extension can call 500 (echo test).
->
-> Demo setup link: `verco-telefoon://setup?s=…&u=…&p=…`  ← vul in: demo-gebruiker op de centrale van Verco (bereikbaar via internet)
+Plakken bij App Store Connect → de app → *App Review Information* → **Notes** (en vink *Sign-in required* uit:
+inloggen gaat met een link, niet met gebruikersnaam en wachtwoord).
 
-Voor de review is dus een **demo-gebruiker** nodig op een centrale die vanaf internet bereikbaar is
-(bijv. `verco.sip.cloud2go.nl`, met *Apps ook buiten het kantoornetwerk* aan).
+> Verco Telefoon is a business softphone for companies that use a Verco Voip Centrale (an Asterisk-based phone system).
+> Employees do not create accounts: the company's administrator gives each employee a QR code, which sets up the app
+> automatically.
+>
+> **How to test:**
+> 1. Copy this setup link, open the app and tap "Instellink plakken" (Paste setup link), or open the link on the device:
+>    `verco-telefoon://setup?s=…&u=…&p=…`
+> 2. The app connects to our demo phone system (status "Aangemeld" = registered).
+> 3. Outgoing call: dial **\*43** (echo test: you hear yourself).
+> 4. Incoming call: dial **\*44** and hang up. The phone system calls you back after about 10 seconds. This also works
+>    when the app is closed or the device is locked (VoIP push → CallKit).
+> 5. "Collega's" shows colleagues with a presence light, "Contacten" the company phone book.
+>
+> The app only connects to the company phone system that issued the setup link. It does not collect data and has no
+> in-app purchases. The source code is public (GPLv3): https://github.com/vercocomputers-beep/verco-telefoon-app
+
+## Demo-gebruiker klaarzetten (eenmalig, op de centrale van Verco)
+
+De centrale moet voor Apple vanaf internet bereikbaar zijn. Vanaf centrale **3.02** gaat dat via een aparte
+**app-poort**: daarop staan alleen de instellingen en het telefoonboek voor de app, nooit de beheerpagina.
+
+1. **Certificaat** (de iPhone accepteert geen zelfgemaakt certificaat): Beveiliging → Certificaat →
+   *Domeinnaam* = `verco.sip.cloud2go.nl`, Cloudflare API-token (sjabloon *DNS-zone bewerken*, alleen zone
+   `cloud2go.nl`), e-mailadres → *Certificaat aanvragen*.
+2. **Mobiel:** *Eigen app Verco Telefoon* aan, *Apps ook buiten het kantoornetwerk* aan, *Poort voor de eigen app* = 8444.
+3. **Router (UniFi), doorsturen naar de centrale (192.168.80.56):** TCP **8444** (nieuw), UDP 5060 en UDP 10000–10200 (staan er al).
+4. **Gebruiker** aanmaken: naam `Apple Review`, toestelnummer bijv. `199`, app aan, geen voicemail-e-mail. Opslaan, **Toepassen**.
+5. Gebruiker → **App** → de link onder *Verco Telefoon* kopiëren en hierboven in de notitie plakken.
+6. Zelf controleren via 4G (wifi uit): link openen, *43 bellen, *44 bellen en ophangen → de app gaat over.
+
+Na de keuring de gebruiker *Apple Review* laten staan: Apple test ook bij elke update.
