@@ -309,7 +309,7 @@ fun SettingsTab(app: VercoApp) {
             TextButton(onClick = { app.phone.stop(); app.phone.start(c) }) { Text("Opnieuw verbinden") }
             TextButton(onClick = { confirm = true }) { Text("Afmelden van deze telefoon", color = Red) }
         }
-        item { Text("Verco Telefoon 0.1 (Android) · open source (GPLv3) · Linphone-bouwdoos van Belledonne Communications",
+        item { Text("Verco Telefoon 0.2 (Android) · open source (GPLv3) · Linphone-bouwdoos van Belledonne Communications",
             Modifier.padding(16.dp), fontSize = 12.sp, color = Color.Gray) }
     }
     if (confirm) AlertDialog(onDismissRequest = { confirm = false },
