@@ -21,6 +21,12 @@ struct SettingsView: View {
                     }
                 }
                 Section {
+                    Button("Instellingen verversen bij de centrale") {
+                        Task { await store.refresh(showErrors: true) }
+                    }
+                    if let e = store.error {
+                        Text(e).font(.caption).foregroundStyle(Theme.red)
+                    }
                     Button("Opnieuw verbinden") {
                         if let cfg = store.config {
                             phone.stop()

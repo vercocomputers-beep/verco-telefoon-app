@@ -4,6 +4,7 @@ import SwiftUI
 struct CallView: View {
     @EnvironmentObject var phone: PhoneManager
     @State private var showKeypad = false
+    @State private var showTransfer = false
 
     var body: some View {
         ZStack {
@@ -33,6 +34,9 @@ struct CallView: View {
                         RoundButton(icon: "speaker.wave.2.fill", label: "Luidspreker", on: phone.speaker) {
                             phone.toggleSpeaker()
                         }
+                        RoundButton(icon: "arrowshape.turn.up.right.fill", label: "Doorverbinden", on: false) {
+                            showTransfer = true
+                        }
                     }
                     if showKeypad {
                         InCallKeypad { phone.sendDtmf($0) }
@@ -51,6 +55,7 @@ struct CallView: View {
             }
             .padding()
         }
+        .sheet(isPresented: $showTransfer) { TransferView() }
     }
 
     @ViewBuilder private var stateText: some View {

@@ -38,6 +38,10 @@ final class PhoneManager: ObservableObject {
     @Published var speaker = false
     /// Lampjes van collega's, per toestelnummer.
     @Published private(set) var presence: [String: Presence] = [:]
+    /// Aantal nieuwe voicemailberichten (MWI van de centrale).
+    @Published private(set) var voicemailNew = 0
+    private var accountDelegate: AccountWatcher?
+    private var voicemailCode = ""
     private var friendList: FriendList?
 
     private var core: Core?
@@ -69,7 +73,15 @@ final class PhoneManager: ObservableObject {
             try server.setTransport(newValue: sip.transport.lowercased() == "tcp" ? .Tcp : .Udp)
             try params.setServeraddress(newValue: server)
             params.registerEnabled = true
+            voicemailCode = cfg.voicemail
+            if !cfg.voicemail.isEmpty {
+                // voicemailteller: abonnement op 'message-summary' bij de centrale
+                params.mwiServerAddress = try? factory.createAddress(addr: "sip:\(sip.username)@\(domain)")
+            }
             let account = try core.createAccount(params: params)
+            let aw = AccountWatcher(owner: self)
+            account.addDelegate(delegate: aw)
+            accountDelegate = aw
             core.addAuthInfo(info: auth)
             try core.addAccount(account: account)
             core.defaultAccount = account
@@ -97,6 +109,8 @@ final class PhoneManager: ObservableObject {
         delegate = nil
         friendList = nil
         presence = [:]
+        accountDelegate = nil
+        voicemailNew = 0
         startedFor = nil
         status = .off
         phase = .none
@@ -145,6 +159,19 @@ final class PhoneManager: ObservableObject {
             try? call.terminate()
         } else if phase != .none {
             phase = .none
+        }
+    }
+
+    /// Lopend gesprek doorverbinden naar een ander nummer (zonder overleg).
+    func transfer(to number: String) -> Bool {
+        let digits = number.filter { "0123456789*#+".contains($0) }
+        guard let call = core?.currentCall, !digits.isEmpty,
+              let addr = try? Factory.Instance.createAddress(addr: "sip:\(digits)@\(domain)") else { return false }
+        do {
+            try call.transferTo(referTo: addr)
+            return true
+        } catch {
+            return false
         }
     }
 
@@ -208,6 +235,27 @@ final class PhoneManager: ObservableObject {
         }
     }
 
+    fileprivate func voicemailChanged(_ mwi: MessageWaitingIndication) {
+        voicemailNew = Int(mwi.getSummary(contextClass: .Voice)?.nbNew ?? mwi.nbNew)
+    }
+
+    /// Gesprek bewaren in Recent (na afloop).
+    private func remember(_ call: Call) {
+        guard let log = call.callLog else { return }
+        let addr = log.remoteAddress
+        let number = addr?.username ?? ""
+        if number.hasPrefix("*") { return }              // functiecodes (*97, *78…) niet in Recent
+        let kind: RecentCall.Kind
+        if log.dir == .Outgoing {
+            kind = .outgoing
+        } else {
+            kind = log.status == .Success || log.status == .AcceptedElsewhere ? .incoming : .missed
+        }
+        RecentStore.shared.add(RecentCall(kind: kind, number: number, name: addr?.displayName ?? "",
+                                          date: Date(timeIntervalSince1970: TimeInterval(log.startDate)),
+                                          duration: log.duration))
+    }
+
     // MARK: gebeurtenissen van liblinphone
 
     fileprivate func registrationChanged(_ state: RegistrationState, _ message: String) {
@@ -236,7 +284,10 @@ final class PhoneManager: ObservableObject {
                 CallKitManager.shared.callConnected()
             }
             phase = .active
-        case .End, .Error, .Released:
+        case .Released:
+            remember(call)
+            fallthrough
+        case .End, .Error:
             if core?.callsNb ?? 0 == 0 {
                 CallKitManager.shared.callEnded(failed: state == .Error)
                 phase = .ended
@@ -268,5 +319,19 @@ private final class Delegate: CoreDelegate {
 
     func onNotifyPresenceReceived(core: Core, linphoneFriend: Friend) {
         Task { @MainActor in self.owner?.presenceChanged(linphoneFriend) }
+    }
+
+    func onMessageWaitingIndicationChanged(core: Core, lev: Event, mwi: MessageWaitingIndication) {
+        Task { @MainActor in self.owner?.voicemailChanged(mwi) }
+    }
+}
+
+/// Voicemailteller per account (ook als de centrale de melding uit zichzelf stuurt).
+private final class AccountWatcher: AccountDelegate {
+    weak var owner: PhoneManager?
+    init(owner: PhoneManager) { self.owner = owner }
+
+    func onMessageWaitingIndicationChanged(account: Account, mwi: MessageWaitingIndication) {
+        Task { @MainActor in self.owner?.voicemailChanged(mwi) }
     }
 }

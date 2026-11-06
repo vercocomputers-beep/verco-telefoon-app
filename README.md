@@ -7,7 +7,7 @@ met push voor inkomende oproepen.
 
 ## Status
 
-**Versie 0.3 (fase 2 van het plan).** Bouwt in GitHub Actions; nog niet getest op een iPhone (wacht op het Apple-account).
+**Versie 0.4 (fase 2 van het plan).** Bouwt in GitHub Actions; nog niet getest op een iPhone (wacht op het Apple-account).
 
 | Onderdeel | Stand |
 |---|---|
@@ -18,6 +18,7 @@ met push voor inkomende oproepen.
 | Gesprekken als normaal iPhone-gesprek (CallKit: vergrendelscherm, Recent, knoppen van iOS) | gebouwd |
 | Overgaan als de app dicht is (PushKit + push vanuit de centrale) | volgt (Apple-account nodig) |
 | Collega's met lampje (presence: vrij, in gesprek, niet storen; centrale 2.94+) | gebouwd |
+| Recent (inkomend, uitgaand, gemist, terugbellen), voicemailteller (MWI), doorverbinden, instellingen verversen | gebouwd |
 | App-icoon (Verco-logo) en accentkleur | gebouwd |
 | Android-versie | later |
 

@@ -13,7 +13,18 @@ struct FunctionsView: View {
                         Button {
                             phone.call(vm)
                         } label: {
-                            Label("Voicemail beluisteren", systemImage: "recordingtape")
+                            HStack {
+                                Label("Voicemail beluisteren", systemImage: "recordingtape")
+                                Spacer()
+                                if phone.voicemailNew > 0 {
+                                    Text("\(phone.voicemailNew) nieuw")
+                                        .font(.caption.bold())
+                                        .foregroundStyle(.white)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 3)
+                                        .background(Capsule().fill(Theme.red))
+                                }
+                            }
                         }
                     }
                 }

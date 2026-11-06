@@ -56,6 +56,14 @@ final class AccountStore: ObservableObject {
         }
     }
 
+    /// Instellingen opnieuw ophalen bij dezelfde centrale (bijv. nieuwe collega's of ander adres).
+    func refresh(showErrors: Bool = false) async {
+        guard let cfg = config, let src = cfg.source, let server = URL(string: src) else { return }
+        let before = error
+        await setup(link: SetupLink(server: server, username: cfg.sip.username, password: cfg.sip.password))
+        if !showErrors { error = before }
+    }
+
     func logout() {
         Keychain.delete(keychainKey)
         config = nil

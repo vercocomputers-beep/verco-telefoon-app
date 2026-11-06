@@ -20,20 +20,27 @@ struct RootView: View {
 
 struct MainTabs: View {
     @EnvironmentObject var store: AccountStore
+    @EnvironmentObject var phone: PhoneManager
+    @ObservedObject private var recents = RecentStore.shared
     @StateObject private var phonebook = Phonebook()
 
     var body: some View {
         TabView {
             DialerView()
                 .tabItem { Label("Kiezen", systemImage: "circle.grid.3x3.fill") }
+            RecentsView()
+                .tabItem { Label("Recent", systemImage: "clock.fill") }
+                .badge(recents.unseenMissed)
             ContactsView(phonebook: phonebook)
                 .tabItem { Label("Contacten", systemImage: "person.2.fill") }
             FunctionsView()
                 .tabItem { Label("Functies", systemImage: "star.fill") }
+                .badge(phone.voicemailNew)
             SettingsView()
                 .tabItem { Label("Instellingen", systemImage: "gearshape.fill") }
         }
         .task {
+            await store.refresh()          // instellingen stil verversen bij de centrale
             if let url = store.config?.phonebook { await phonebook.load(from: url) }
         }
     }
