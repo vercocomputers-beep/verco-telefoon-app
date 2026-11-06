@@ -36,7 +36,7 @@ final class Phonebook: ObservableObject {
     static func parse(_ text: String) -> [PhonebookEntry] {
         var out: [PhonebookEntry] = []
         var uid = "", name = ""
-        var nums: [(String, String)] = []
+        var nums: [(number: String, kind: String)] = []
         // vCard-regels die verder gaan op de volgende regel (beginnen met spatie) samenvoegen
         let lines = text.replacingOccurrences(of: "\r\n ", with: "").replacingOccurrences(of: "\n ", with: "")
             .components(separatedBy: .newlines)
@@ -51,7 +51,7 @@ final class Phonebook: ObservableObject {
             } else if line.hasPrefix("TEL") , let idx = line.firstIndex(of: ":") {
                 let head = line[..<idx].uppercased()
                 let kind = head.contains("CELL") ? "mobiel" : (head.contains("WORK") ? "werk" : "")
-                nums.append((String(line[line.index(after: idx)...]), kind))
+                nums.append((number: String(line[line.index(after: idx)...]), kind: kind))
             } else if line == "END:VCARD", !name.isEmpty {
                 out.append(PhonebookEntry(id: uid.isEmpty ? name : uid, name: name, numbers: nums))
             }
@@ -60,7 +60,7 @@ final class Phonebook: ObservableObject {
     }
 
     private static func unescape(_ s: String) -> String {
-        s.replacingOccurrences(of: "\\,", with: ",").replacingOccurrences(of: "\;", with: ";")
+        s.replacingOccurrences(of: "\\,", with: ",").replacingOccurrences(of: "\\;", with: ";")
             .replacingOccurrences(of: "\\n", with: " ").replacingOccurrences(of: "\\\\", with: "\\")
     }
 }
