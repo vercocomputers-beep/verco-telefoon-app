@@ -60,3 +60,8 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+
+# Verco Telefoon: door XcodeGen gemaakt, niet opslaan
+VercoTelefoon.xcodeproj/
+App/Info.plist
+build.log

@@ -13,6 +13,9 @@ function Ok($t){ Write-Host $t -ForegroundColor Green }
 function Stop-Net($t,$c=1){ Write-Host ""; Write-Host $t -ForegroundColor Red; if($Pauze){Read-Host "Enter om te sluiten"|Out-Null}; exit $c }
 
 Set-Location $PSScriptRoot
+# Als beheerder ziet git de map (van gebruiker marcel, OneDrive) als "niet van mij" en weigert dan stilletjes.
+# Daarom deze map voor dit script als veilig aanmerken.
+$env:GIT_CONFIG_COUNT = "1"; $env:GIT_CONFIG_KEY_0 = "safe.directory"; $env:GIT_CONFIG_VALUE_0 = "*"
 Info "=== Verco Telefoon app -> GitHub (map: $PSScriptRoot) ==="
 
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
@@ -23,7 +26,8 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) { Stop-Net "git nog niet gevonden. Sluit en start opnieuw." }
 if (-not (Test-Path ".git")) { Stop-Net "Dit is geen git-map. Draai dit script in de map 'Verco Telefoon app'." }
 
-git add -A | Out-Null
+git add -A
+if ($LASTEXITCODE -ne 0) { Stop-Net "Vastleggen mislukt (git add)." }
 $wijz = git status --porcelain
 if ($wijz) { git commit -q -m "Back-up vanaf $env:COMPUTERNAME ($(Get-Date -Format 'yyyy-MM-dd HH:mm'))" }
 

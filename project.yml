@@ -1,0 +1,44 @@
+# Xcode-project wordt op de Mac (of in GitHub Actions) gemaakt met XcodeGen:  xcodegen generate
+name: VercoTelefoon
+options:
+  bundleIdPrefix: org.verco
+  deploymentTarget:
+    iOS: "16.0"
+packages:
+  linphonesw:
+    url: https://gitlab.linphone.org/BC/public/linphone-sdk-swift-ios.git
+    branch: stable
+targets:
+  VercoTelefoon:
+    type: application
+    platform: iOS
+    sources:
+      - App/Sources
+    dependencies:
+      - package: linphonesw
+    scheme: {}
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: Verco Telefoon
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIBackgroundModes: [audio, voip]
+        NSMicrophoneUsageDescription: "Nodig om te kunnen bellen."
+        NSCameraUsageDescription: "Nodig om de QR-code van de telefooncentrale te scannen (en voor videobellen)."
+        NSLocalNetworkUsageDescription: "Nodig om de telefooncentrale op het netwerk van kantoor te bereiken."
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+        CFBundleURLTypes:
+          - CFBundleURLName: org.verco.telefoon
+            CFBundleURLSchemes: [verco-telefoon]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: org.verco.telefoon
+        PRODUCT_NAME: VercoTelefoon
+        SWIFT_VERSION: "5.9"
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
+        ENABLE_BITCODE: NO
