@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-15-intel   # Intel-Mac: minder wachtrij dan de arm64-Macs van GitHub
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v5
