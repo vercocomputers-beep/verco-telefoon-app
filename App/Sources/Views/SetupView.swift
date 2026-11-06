@@ -31,6 +31,19 @@ struct SetupView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .padding(.horizontal, 32)
+
+                Button {
+                    // instellink (verco-telefoon://setup?…) uit het klembord, bijv. uit een e-mail van de beheerder
+                    if let text = UIPasteboard.general.string?.trimmingCharacters(in: .whitespacesAndNewlines),
+                       let url = URL(string: text) {
+                        Task { await store.setup(from: url) }
+                    } else {
+                        store.error = "Kopieer eerst de instellink (begint met verco-telefoon://) en tik dan opnieuw."
+                    }
+                } label: {
+                    Label("Instellink plakken", systemImage: "doc.on.clipboard")
+                }
+                .font(.subheadline)
             }
 
             if let e = store.error {

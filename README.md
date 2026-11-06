@@ -7,7 +7,7 @@ met push voor inkomende oproepen.
 
 ## Status
 
-**Versie 0.5 (fase 2 van het plan).** Bouwt in GitHub Actions; nog niet getest op een iPhone (wacht op het Apple-account).
+**Versie 0.6 (fase 2 van het plan).** Bouwt in GitHub Actions; nog niet getest op een iPhone (wacht op het Apple-account).
 
 | Onderdeel | Stand |
 |---|---|
@@ -20,6 +20,7 @@ met push voor inkomende oproepen.
 | Collega's met lampje (presence: vrij, in gesprek, niet storen; centrale 2.94+) | gebouwd |
 | Recent (inkomend, uitgaand, gemist, terugbellen), voicemailteller (MWI), doorverbinden, instellingen verversen | gebouwd |
 | App-icoon (Verco-logo) en accentkleur | gebouwd |
+| TestFlight-workflow, privacymanifest, privacyverklaring, App Store-teksten, instellink plakken (voor App Review) | gebouwd (0.6) |
 | Android-versie | later |
 
 ## Hoe het gebouwd wordt
@@ -27,7 +28,8 @@ met push voor inkomende oproepen.
 - Het Xcode-project wordt **niet** opgeslagen maar gemaakt met [XcodeGen](https://github.com/yonaskolb/XcodeGen) uit `project.yml`.
 - Bij elke push naar `main` bouwt **GitHub Actions** de app op een Mac in de cloud (simulator, zonder ondertekening) als controle:
   zie het tabblad *Actions* op GitHub. Fouten staan daar als rode meldingen.
-- Testversies op de iPhone komen later via **TestFlight**, zodra het Apple Developer-account van Verco VOF actief is.
+- Testversies op de iPhone gaan via **TestFlight**: workflow *Naar TestFlight* (handmatig starten of bij een tag `v…`). Eenmalige stappen bij Apple en GitHub: zie `docs/appstore.md`.
+- Privacyverklaring: `docs/privacy/index.html` (via GitHub Pages). App Store-teksten en notitie voor App Review: `docs/appstore.md`.
 
 Op een Mac zelf bouwen:
 
