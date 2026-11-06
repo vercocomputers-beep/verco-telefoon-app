@@ -2,7 +2,7 @@ import Foundation
 import linphonesw
 
 /// Bellen via de Linphone-bouwdoos (liblinphone). Eén account: het app-account van de gebruiker op de centrale.
-/// Versie 0.1: bellen en gebeld worden terwijl de app open is. CallKit en push volgen in een volgende stap.
+/// Gesprekken lopen via CallKit (CallKitManager): iOS toont ze als gewoon gesprek. Push volgt in een volgende stap.
 @MainActor
 final class PhoneManager: ObservableObject {
     static let shared = PhoneManager()
@@ -45,6 +45,8 @@ final class PhoneManager: ObservableObject {
         do {
             let factory = Factory.Instance
             let core = try factory.createCore(configPath: "", factoryConfigPath: "", systemContext: nil)
+            core.callkitEnabled = true          // geluid wordt geregeld via CallKit (activateAudio)
+            CallKitManager.shared.phone = self
             core.videoCaptureEnabled = false
             core.videoDisplayEnabled = false
             try core.start()
@@ -91,38 +93,59 @@ final class PhoneManager: ObservableObject {
 
     // MARK: bellen
 
+    /// Bellen vanuit de app: via CallKit.
     func call(_ number: String) {
         let digits = number.filter { "0123456789*#+".contains($0) }
-        guard let core, !digits.isEmpty else { return }
+        guard core != nil, !digits.isEmpty, phase == .none || phase == .ended else { return }
+        remoteNumber = digits
+        remoteName = ""
+        phase = .outgoing
+        CallKitManager.shared.startOutgoing(number: digits)
+    }
+
+    /// Het gesprek echt opzetten (aangeroepen door CallKit).
+    func placeCall(_ number: String) {
+        guard let core else { return }
         do {
-            let addr = try Factory.Instance.createAddress(addr: "sip:\(digits)@\(domain)")
+            let addr = try Factory.Instance.createAddress(addr: "sip:\(number)@\(domain)")
             let params = try core.createCallParams(call: nil)
             params.videoEnabled = false
-            guard core.inviteAddressWithParams(addr: addr, params: params) != nil else { return }
-            remoteNumber = digits
-            remoteName = ""
-            phase = .outgoing
+            if core.inviteAddressWithParams(addr: addr, params: params) == nil {
+                phase = .none
+                CallKitManager.shared.callEnded(failed: true)
+            }
         } catch {
+            phase = .none
+            CallKitManager.shared.callEnded(failed: true)
+        }
+    }
+
+    func accept() { CallKitManager.shared.requestAnswer() }
+    func hangup() { CallKitManager.shared.requestEnd() }
+
+    func acceptDirect() {
+        guard let call = core?.currentCall ?? core?.calls.first else { return }
+        try? call.accept()
+    }
+
+    func hangupDirect() {
+        guard let core else { return }
+        if let call = core.currentCall ?? core.calls.first {
+            try? call.terminate()
+        } else if phase != .none {
             phase = .none
         }
     }
 
-    func accept() {
-        guard let call = core?.currentCall else { return }
-        try? call.accept()
-    }
+    func configureAudio() { core?.configureAudioSession() }
+    func activateAudio(_ on: Bool) { core?.activateAudioSession(activated: on) }
 
-    func hangup() {
-        guard let core else { return }
-        if let call = core.currentCall ?? core.calls.first {
-            try? call.terminate()
-        }
-    }
+    func toggleMute() { CallKitManager.shared.requestMute(!muted) }
 
-    func toggleMute() {
+    func setMutedDirect(_ on: Bool) {
         guard let core else { return }
-        core.micEnabled.toggle()
-        muted = !core.micEnabled
+        core.micEnabled = !on
+        muted = on
     }
 
     func toggleSpeaker() {
@@ -158,14 +181,20 @@ final class PhoneManager: ObservableObject {
         remoteNumber = addr?.username ?? remoteNumber
         remoteName = addr?.displayName ?? ""
         switch state {
-        case .IncomingReceived: phase = .incoming
+        case .IncomingReceived:
+            phase = .incoming
+            CallKitManager.shared.reportIncoming(name: remoteName, number: remoteNumber)
         case .OutgoingInit, .OutgoingProgress: phase = .outgoing
         case .OutgoingRinging, .OutgoingEarlyMedia: phase = .ringing
         case .Connected, .StreamsRunning:
-            if phase != .active { connectedAt = Date() }
+            if phase != .active {
+                connectedAt = Date()
+                CallKitManager.shared.callConnected()
+            }
             phase = .active
         case .End, .Error, .Released:
             if core?.callsNb ?? 0 == 0 {
+                CallKitManager.shared.callEnded(failed: state == .Error)
                 phase = .ended
                 connectedAt = nil
                 muted = false

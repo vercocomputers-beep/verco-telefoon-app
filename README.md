@@ -7,7 +7,7 @@ met push voor inkomende oproepen.
 
 ## Status
 
-**Versie 0.1 (skelet, fase 2 van het plan).**
+**Versie 0.2 (fase 2 van het plan).** Bouwt in GitHub Actions; nog niet getest op een iPhone (wacht op het Apple-account).
 
 | Onderdeel | Stand |
 |---|---|
@@ -15,10 +15,10 @@ met push voor inkomende oproepen.
 | Instellingen ophalen bij de centrale (`/prov/vt`, JSON versie 1) en veilig bewaren (sleutelhanger) | gebouwd |
 | Aanmelden en bellen via liblinphone (Linphone-bouwdoos) | gebouwd |
 | Kiesscherm, gespreksscherm (stil, luidspreker, toetsen), contacten, functies (★), instellingen | gebouwd |
-| Inkomend gesprek als normaal iPhone-gesprek (CallKit) | volgt |
+| Gesprekken als normaal iPhone-gesprek (CallKit: vergrendelscherm, Recent, knoppen van iOS) | gebouwd |
 | Overgaan als de app dicht is (PushKit + push vanuit de centrale) | volgt (Apple-account nodig) |
 | Collega's met lampje (presence/BLF) | volgt |
-| App-icoon en huisstijl | volgt |
+| App-icoon (Verco-logo) en accentkleur | gebouwd |
 | Android-versie | later |
 
 ## Hoe het gebouwd wordt
@@ -43,7 +43,8 @@ open VercoTelefoon.xcodeproj
 |---|---|
 | `App/Sources/App` | start van de app, kleuren |
 | `App/Sources/Model` | instellingen (QR-link, ophalen, sleutelhanger), telefoonboek |
-| `App/Sources/Phone` | bellen via liblinphone (`PhoneManager`) |
+| `App/Sources/Phone` | bellen via liblinphone (`PhoneManager`) en CallKit (`CallKitManager`) |
+| `App/Resources` | app-icoon en kleuren (Assets.xcassets) |
 | `App/Sources/Views` | schermen |
 | `.github/workflows` | bouwcontrole in GitHub Actions |
 | `scripts/linphone-sdk.sh` | haalt de Linphone-bouwdoos op (vaste versie) naar `Packages/linphone-sdk` |
