@@ -13,6 +13,8 @@ class VercoApp : Application() {
         store = AccountStore(this)
         recents = RecentStore(this)
         phone = PhoneManager(this, recents)
+        // Firebase klaarzetten, ook als Android de app alleen start voor een pushbericht
+        store.config.value?.let { Push.init(this, it) }
     }
 
     companion object {

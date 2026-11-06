@@ -14,6 +14,9 @@ import java.net.URLEncoder
 data class Colleague(val name: String, val ext: String)
 data class Function(val name: String, val code: String)
 
+/** Gegevens om de app bij Firebase aan te melden (Android-push), van de centrale. Niet geheim. */
+data class FcmConfig(val projectId: String, val appId: String, val apiKey: String, val senderId: String)
+
 data class ProvisioningConfig(
     val company: String,
     val userName: String,
@@ -28,6 +31,7 @@ data class ProvisioningConfig(
     val functions: List<Function>,
     val colleagues: List<Colleague>,
     val pushEnabled: Boolean,
+    val fcm: FcmConfig?,
     val source: String,
     val raw: String,
 ) {
@@ -57,6 +61,9 @@ data class ProvisioningConfig(
                 colleagues = (0 until (c?.length() ?: 0)).map { c!!.getJSONObject(it) }
                     .map { Colleague(it.optString("name"), it.optString("extension")) },
                 pushEnabled = o.optJSONObject("push")?.optBoolean("enabled") ?: false,
+                fcm = o.optJSONObject("push")?.optJSONObject("fcm")?.let {
+                    FcmConfig(it.optString("project_id"), it.optString("app_id"), it.optString("api_key"), it.optString("sender_id"))
+                }?.takeIf { it.projectId.isNotEmpty() && it.appId.isNotEmpty() && it.apiKey.isNotEmpty() && it.senderId.isNotEmpty() },
                 source = source,
                 raw = json,
             )

@@ -35,6 +35,7 @@ class MainActivity : ComponentActivity() {
             app.store.config.collectLatest { cfg ->
                 if (cfg != null) {
                     app.phone.start(cfg)
+                    Push.init(this@MainActivity, cfg)
                     PhoneService.start(this@MainActivity)
                 } else {
                     app.phone.stop()

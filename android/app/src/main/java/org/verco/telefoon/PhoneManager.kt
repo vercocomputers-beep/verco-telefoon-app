@@ -39,6 +39,8 @@ class PhoneManager(private val context: Context, private val recents: RecentStor
     private var domain = ""
     private var startedFor: String? = null
     private var friendList: FriendList? = null
+    private var pushToken = ""
+    private var pushProject = ""
 
     private val listener = object : CoreListenerStub() {
         override fun onAccountRegistrationStateChanged(core: Core, account: Account, state: RegistrationState?, message: String) {
@@ -129,6 +131,8 @@ class PhoneManager(private val context: Context, private val recents: RecentStor
             val c = factory.createCore(null, null, context)
             c.isVideoCaptureEnabled = false
             c.isVideoDisplayEnabled = false
+            // push regelen we zelf (Push.kt); de eigen Firebase-koppeling van de bouwdoos blijft uit
+            c.isPushNotificationEnabled = false
             c.start()
             domain = cfg.server
             val auth = factory.createAuthInfo(cfg.sipUser, null, cfg.sipPassword, null, null, null, null)
@@ -138,6 +142,9 @@ class PhoneManager(private val context: Context, private val recents: RecentStor
             server?.transport = if (cfg.transport.equals("tcp", true)) TransportType.Tcp else TransportType.Udp
             params.serverAddress = server
             params.isRegisterEnabled = true
+            params.pushNotificationAllowed = false
+            params.remotePushNotificationAllowed = false
+            pushContact()?.let { params.contactUriParameters = it }
             if (cfg.voicemail.isNotEmpty()) params.mwiServerAddress = factory.createAddress("sip:${cfg.sipUser}@$domain")
             val account = c.createAccount(params)
             c.addAuthInfo(auth)
@@ -153,6 +160,27 @@ class PhoneManager(private val context: Context, private val recents: RecentStor
             status.value = Status.FAILED
             statusText.value = "Aanmelden mislukt: ${e.message}"
         }
+    }
+
+    /** Pushsleutel van Firebase: meesturen bij het aanmelden (RFC 8599), zodat de centrale de app kan wekken. */
+    fun setPushToken(token: String, project: String) {
+        if (token == pushToken && project == pushProject) return
+        pushToken = token
+        pushProject = project
+        val acc = core?.defaultAccount ?: return
+        val p = acc.params.clone()
+        p.contactUriParameters = pushContact()
+        acc.params = p
+    }
+
+    private fun pushContact(): String? =
+        if (pushToken.isEmpty()) null else "pn-provider=fcm;pn-prid=$pushToken;pn-param=$pushProject"
+
+    /** Gewekt door een pushbericht: meteen opnieuw aanmelden, dan komt het gesprek binnen. */
+    fun wake(cfg: ProvisioningConfig) {
+        if (core == null) start(cfg)
+        core?.ensureRegistered()
+        core?.refreshRegisters()
     }
 
     fun stop() {

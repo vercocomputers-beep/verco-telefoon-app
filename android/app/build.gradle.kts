@@ -13,7 +13,7 @@ android {
         minSdk = 26
         targetSdk = 35
         versionCode = (System.getenv("BUILD_NUMBER") ?: "1").toInt()
-        versionName = "0.1.0"
+        versionName = "0.2.0"
     }
 
     signingConfigs {
@@ -44,6 +44,8 @@ android {
 dependencies {
     implementation("org.linphone:linphone-sdk-android:5.5.39")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
+    implementation("com.google.firebase:firebase-messaging")
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.activity:activity-compose:1.9.3")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
