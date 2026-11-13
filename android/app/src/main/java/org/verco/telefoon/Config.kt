@@ -1,18 +1,31 @@
 package org.verco.telefoon
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
 import android.net.Uri
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
+import java.net.InetSocketAddress
+import java.net.Socket
 import java.net.URL
 import java.net.URLEncoder
 
 /** Instellingen die de centrale geeft op /prov/vt (versie 1). */
 data class Colleague(val name: String, val ext: String)
 data class Function(val name: String, val code: String)
+
+/** Rechtstreeks adres van de centrale (lokaal IP), naast het tussenstation. De app gebruikt dit als het de centrale
+ *  rechtstreeks kan bereiken (kantoor-wifi of VPN) — dan blijft bellen werken ook als het tussenstation uitvalt.
+ *  'probe' is een snelle bereikbaarheidstest (de lokale webpoort van de centrale). */
+data class DirectConfig(val domain: String, val port: Int, val phonebook: String, val probeHost: String, val probePort: Int)
 
 /** Gegevens om de app bij Firebase aan te melden (Android-push), van de centrale. Niet geheim. */
 data class FcmConfig(val projectId: String, val appId: String, val apiKey: String, val senderId: String)
@@ -34,6 +47,7 @@ data class ProvisioningConfig(
     val fcm: FcmConfig?,
     val source: String,
     val raw: String,
+    val direct: DirectConfig? = null,
 ) {
     val server: String get() = if (port == 5060) domain else "$domain:$port"
 
@@ -66,6 +80,14 @@ data class ProvisioningConfig(
                 }?.takeIf { it.projectId.isNotEmpty() && it.appId.isNotEmpty() && it.apiKey.isNotEmpty() && it.senderId.isNotEmpty() },
                 source = source,
                 raw = json,
+                direct = o.optJSONObject("direct")?.let { d ->
+                    val sip = d.optJSONObject("sip")
+                    val probe = d.optJSONObject("probe")
+                    if (sip != null && probe != null)
+                        DirectConfig(sip.optString("domain"), sip.optInt("port", 5060),
+                            d.optString("phonebook"), probe.optString("host"), probe.optInt("port", 0))
+                    else null
+                },
             )
         }
     }
@@ -93,15 +115,54 @@ data class SetupLink(val server: String, val user: String, val password: String)
 
 /** Bewaart de instellingen (alleen leesbaar voor deze app) en haalt ze op via de QR-link. */
 class AccountStore(context: Context) {
+    private val ctx = context.applicationContext
     private val prefs = context.getSharedPreferences("verco", Context.MODE_PRIVATE)
     val config = MutableStateFlow<ProvisioningConfig?>(null)
+    /** De instellingen die de app nú gebruikt: rechtstreeks met de centrale als dat kan (kantoor-wifi of VPN),
+     *  anders via het tussenstation. Wisselt automatisch mee als het netwerk verandert. */
+    val active = MutableStateFlow<ProvisioningConfig?>(null)
     val busy = MutableStateFlow(false)
     val error = MutableStateFlow<String?>(null)
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private var chooseJob: Job? = null
 
     init {
         val raw = prefs.getString("config", null)
         val src = prefs.getString("source", null)
         if (raw != null && src != null) config.value = runCatching { ProvisioningConfig.parse(raw, src) }.getOrNull()
+        active.value = config.value
+        recompute()
+        watchNetwork()
+    }
+
+    /** Opnieuw bepalen of de app rechtstreeks met de centrale kan of via het tussenstation moet. */
+    fun recompute() {
+        chooseJob?.cancel()
+        chooseJob = scope.launch {
+            val cfg = config.value
+            active.value = if (cfg == null) null else chooseEffective(cfg)
+        }
+    }
+
+    private suspend fun chooseEffective(cfg: ProvisioningConfig): ProvisioningConfig {
+        val d = cfg.direct ?: return cfg          // geen tussenstation: niets te kiezen
+        return if (reachable(d.probeHost, d.probePort))
+            cfg.copy(domain = d.domain, port = d.port, phonebook = d.phonebook)   // rechtstreeks (wifi/VPN)
+        else cfg                                   // via het tussenstation
+    }
+
+    private suspend fun reachable(host: String, port: Int, timeoutMs: Int = 1500): Boolean = withContext(Dispatchers.IO) {
+        if (host.isBlank() || port <= 0) return@withContext false
+        runCatching { Socket().use { it.connect(InetSocketAddress(host, port), timeoutMs); true } }.getOrDefault(false)
+    }
+
+    private fun watchNetwork() {
+        val cm = ctx.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return
+        val cb = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) = recompute()
+            override fun onLost(network: Network) = recompute()
+        }
+        runCatching { cm.registerDefaultNetworkCallback(cb) }
     }
 
     suspend fun setup(text: String) {
@@ -121,6 +182,7 @@ class AccountStore(context: Context) {
             val cfg = ProvisioningConfig.parse(json, link.server)
             prefs.edit().putString("config", json).putString("source", link.server).apply()
             config.value = cfg
+            recompute()
         } catch (e: Exception) {
             if (!quiet) error.value = when (e) {
                 is java.net.ConnectException, is java.net.SocketTimeoutException, is java.net.UnknownHostException ->
@@ -141,6 +203,7 @@ class AccountStore(context: Context) {
     fun logout() {
         prefs.edit().clear().apply()
         config.value = null
+        active.value = null
     }
 
     private fun fetch(url: String): String {

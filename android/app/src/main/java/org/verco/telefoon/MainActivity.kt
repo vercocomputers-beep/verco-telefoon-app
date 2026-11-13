@@ -32,7 +32,8 @@ class MainActivity : ComponentActivity() {
         handleLink(intent)
         // instellingen gewijzigd -> bellen (opnieuw) starten, service aan/uit
         lifecycleScope.launch {
-            app.store.config.collectLatest { cfg ->
+            // 'active' = direct met de centrale (kantoor-wifi/VPN) of via het tussenstation; wisselt mee met het netwerk
+            app.store.active.collectLatest { cfg ->
                 if (cfg != null) {
                     app.phone.start(cfg)
                     Push.init(this@MainActivity, cfg)

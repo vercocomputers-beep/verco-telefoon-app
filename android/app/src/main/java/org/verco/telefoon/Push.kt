@@ -55,7 +55,7 @@ class VercoFirebaseService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         if (message.data["type"] != "call") return
         val app = VercoApp.instance
-        val cfg = app.store.config.value ?: return
+        val cfg = app.store.active.value ?: app.store.config.value ?: return
         Handler(Looper.getMainLooper()).post {
             PhoneService.start(app)
             app.phone.wake(cfg)
