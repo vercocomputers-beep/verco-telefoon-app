@@ -1,17 +1,16 @@
 name: Android release (bouwen + naar Google Play)
 
 # Bouwt een ONDERTEKENDE AAB en uploadt die automatisch naar Google Play.
-# Starten:
-#   - automatisch bij een versie-tag:  git tag v0.2.1 && git push --tags
-#   - of handmatig: tab Actions -> deze workflow -> Run workflow (kies de track).
+#  - Automatisch bij elke app-wijziging op main  -> track 'internal' (interne test).
+#  - Handmatig (Actions -> Run workflow)          -> kies zelf de track (incl. production).
 #
-# Vereiste repository-secrets (Settings -> Secrets and variables -> Actions):
+# Eenmalig instellen (Settings -> Secrets and variables -> Actions):
 #   UPLOAD_KEYSTORE_BASE64, UPLOAD_KEYSTORE_PASSWORD, UPLOAD_KEY_ALIAS, UPLOAD_KEY_PASSWORD
-#   PLAY_SERVICE_ACCOUNT_JSON   (JSON van het Google Play-serviceaccount; zonder dit wordt
-#                                de AAB wel gebouwd maar niet naar Play geupload)
+#   PLAY_SERVICE_ACCOUNT_JSON   (zonder dit wordt de AAB wel gebouwd maar niet geupload)
 on:
   push:
-    tags: ["v*"]
+    branches: [main]
+    paths: ["android/**", ".github/workflows/android-release.yml"]
   workflow_dispatch:
     inputs:
       track:
@@ -22,6 +21,10 @@ on:
 
 permissions:
   contents: read
+
+concurrency:
+  group: android-release
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -34,14 +37,12 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Versienaam bepalen
+      - name: Versie bepalen
         id: ver
         run: |
-          if [ "${{ github.ref_type }}" = "tag" ]; then
-            echo "name=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
-          else
-            echo "name=0.2.0" >> "$GITHUB_OUTPUT"
-          fi
+          echo "track=${{ github.event.inputs.track || 'internal' }}" >> "$GITHUB_OUTPUT"
+          echo "code=$((1000 + ${{ github.run_number }}))" >> "$GITHUB_OUTPUT"
+          echo "name=0.3.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
 
       - name: Upload-sleutel klaarzetten
         env:
@@ -56,7 +57,7 @@ jobs:
       - name: AAB bouwen
         working-directory: android
         env:
-          BUILD_NUMBER: ${{ github.run_number }}
+          BUILD_NUMBER: ${{ steps.ver.outputs.code }}
           VERSION_NAME: ${{ steps.ver.outputs.name }}
           UPLOAD_KEYSTORE_FILE: ${{ runner.temp }}/upload.jks
           UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
@@ -83,7 +84,7 @@ jobs:
             echo "enabled=true" >> "$GITHUB_OUTPUT"
           else
             echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Geen Play-serviceaccount ingesteld - AAB is gebouwd (zie Artifacts) maar niet naar Google Play geupload."
+            echo "::notice::Geen Play-serviceaccount ingesteld - AAB is gebouwd (zie Artifacts) maar niet geupload."
           fi
 
       - name: Naar Google Play uploaden
@@ -93,5 +94,5 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: org.verco.telefoon
           releaseFiles: VercoTelefoon.aab
-          track: ${{ github.event.inputs.track || 'internal' }}
+          track: ${{ steps.ver.outputs.track }}
           status: completed
