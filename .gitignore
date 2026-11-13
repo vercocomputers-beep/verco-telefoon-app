@@ -73,3 +73,8 @@ android/build/
 android/app/build/
 android/local.properties
 *.apk
+
+# Geheime upload-sleutel: NOOIT committen
+verco-upload.jks
+*-upload.jks
+upload.jks

@@ -4,6 +4,12 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+// Firebase (pushberichten) wordt pas actief zodra android/app/google-services.json aanwezig is.
+// Zolang dat bestand er niet staat, bouwt de app gewoon zonder Firebase-config (de testversie).
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 android {
     namespace = "org.verco.telefoon"
     compileSdk = 35
@@ -18,18 +24,33 @@ android {
 
     signingConfigs {
         // Testsleutel (staat bewust in de repository): elke testversie heeft dezelfde handtekening,
-        // zodat een nieuwe APK over de vorige heen te installeren is. Voor Google Play komt er een eigen sleutel.
+        // zodat een nieuwe APK over de vorige heen te installeren is.
         create("test") {
             storeFile = rootProject.file("verco-test.keystore")
             storePassword = "verco-test"
             keyAlias = "verco-test"
             keyPassword = "verco-test"
         }
+        // Upload-sleutel voor Google Play. Deze sleutel staat NIET in de repository; de gegevens
+        // komen uit omgevingsvariabelen (GitHub Actions-secrets). Zonder die variabelen valt de
+        // release-build terug op de testsleutel hierboven, zodat de gewone testbuild blijft werken.
+        create("upload") {
+            val ksFile = System.getenv("UPLOAD_KEYSTORE_FILE")
+            if (ksFile != null) {
+                storeFile = file(ksFile)
+                storePassword = System.getenv("UPLOAD_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("UPLOAD_KEY_ALIAS")
+                keyPassword = System.getenv("UPLOAD_KEY_PASSWORD")
+            }
+        }
     }
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("test")
+            signingConfig = if (System.getenv("UPLOAD_KEYSTORE_FILE") != null)
+                signingConfigs.getByName("upload")
+            else
+                signingConfigs.getByName("test")
         }
     }
     compileOptions {
