@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "397582973619",
+    "project_id": "verco-telefoon",
+    "storage_bucket": "verco-telefoon.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:397582973619:android:79d4c9e2a9a6e40fa3cec6",
+        "android_client_info": {
+          "package_name": "org.verco.telefoon"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFwpYoAFEVU-q39nB6q9PDluRDdf4Bx-0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
