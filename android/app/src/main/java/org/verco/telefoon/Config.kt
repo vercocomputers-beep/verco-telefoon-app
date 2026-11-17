@@ -25,7 +25,7 @@ data class Function(val name: String, val code: String)
 /** Rechtstreeks adres van de centrale (lokaal IP), naast het tussenstation. De app gebruikt dit als het de centrale
  *  rechtstreeks kan bereiken (kantoor-wifi of VPN) — dan blijft bellen werken ook als het tussenstation uitvalt.
  *  'probe' is een snelle bereikbaarheidstest (de lokale webpoort van de centrale). */
-data class DirectConfig(val domain: String, val port: Int, val phonebook: String, val probeHost: String, val probePort: Int)
+data class DirectConfig(val domain: String, val port: Int, val transport: String, val phonebook: String, val probeHost: String, val probePort: Int)
 
 /** Gegevens om de app bij Firebase aan te melden (Android-push), van de centrale. Niet geheim. */
 data class FcmConfig(val projectId: String, val appId: String, val apiKey: String, val senderId: String)
@@ -85,6 +85,7 @@ data class ProvisioningConfig(
                     val probe = d.optJSONObject("probe")
                     if (sip != null && probe != null)
                         DirectConfig(sip.optString("domain"), sip.optInt("port", 5060),
+                            sip.optString("transport", "udp"),
                             d.optString("phonebook"), probe.optString("host"), probe.optInt("port", 0))
                     else null
                 },
@@ -123,8 +124,61 @@ class AccountStore(context: Context) {
     val active = MutableStateFlow<ProvisioningConfig?>(null)
     val busy = MutableStateFlow(false)
     val error = MutableStateFlow<String?>(null)
+    /** 'Niet storen' van deze gebruiker (via de centrale, /prov/cti). */
+    val dnd = MutableStateFlow(false)
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var chooseJob: Job? = null
+
+    /** Basis-URL van de centrale (webkant) + app-inlog, voor /prov/cti-aanroepen. */
+    private fun ctiUrl(path: String, extra: String = ""): String? {
+        val cfg = config.value ?: return null
+        val base = cfg.source.trimEnd('/')
+        val e = { v: String -> URLEncoder.encode(v, "UTF-8") }
+        return "$base/prov/$path?u=${e(cfg.sipUser)}&p=${e(cfg.sipPassword)}$extra"
+    }
+
+    /** Huidige 'niet storen' ophalen bij de centrale. */
+    suspend fun refreshDnd() {
+        val url = ctiUrl("cti") ?: return
+        runCatching {
+            val json = withContext(Dispatchers.IO) { fetch(url) }
+            dnd.value = JSONObject(json).optJSONObject("status")?.optBoolean("dnd") ?: false
+        }
+    }
+
+    /** 'Niet storen' aan/uit zetten bij de centrale. */
+    suspend fun setDnd(on: Boolean) {
+        val url = ctiUrl("cti/dnd", "&on=${if (on) 1 else 0}") ?: return
+        dnd.value = on   // meteen tonen; wordt bevestigd door het antwoord
+        runCatching {
+            val json = withContext(Dispatchers.IO) { fetch(url) }
+            dnd.value = JSONObject(json).optBoolean("dnd", on)
+        }
+    }
+
+    /**
+     * Collega-status via de centrale (/prov/cti). Betrouwbaarder/sneller dan de SIP-presence,
+     * die na een gesprek lang grijs kan blijven. Geeft een map toestelnummer -> status.
+     */
+    suspend fun colleaguePresence(): Map<String, PhoneManager.Presence>? {
+        val url = ctiUrl("cti") ?: return null
+        return runCatching {
+            val json = withContext(Dispatchers.IO) { fetch(url) }
+            val o = JSONObject(json)
+            o.optJSONObject("status")?.let { dnd.value = it.optBoolean("dnd", dnd.value) }
+            val arr = o.optJSONArray("colleagues") ?: return@runCatching emptyMap<String, PhoneManager.Presence>()
+            val m = HashMap<String, PhoneManager.Presence>()
+            for (i in 0 until arr.length()) {
+                val c = arr.getJSONObject(i)
+                m[c.optString("ext")] = when (c.optString("status")) {
+                    "dnd" -> PhoneManager.Presence.DND
+                    "ingesprek" -> PhoneManager.Presence.BUSY
+                    else -> PhoneManager.Presence.AVAILABLE
+                }
+            }
+            m
+        }.getOrNull()
+    }
 
     init {
         val raw = prefs.getString("config", null)
@@ -147,7 +201,7 @@ class AccountStore(context: Context) {
     private suspend fun chooseEffective(cfg: ProvisioningConfig): ProvisioningConfig {
         val d = cfg.direct ?: return cfg          // geen tussenstation: niets te kiezen
         return if (reachable(d.probeHost, d.probePort))
-            cfg.copy(domain = d.domain, port = d.port, phonebook = d.phonebook)   // rechtstreeks (wifi/VPN)
+            cfg.copy(domain = d.domain, port = d.port, transport = d.transport, phonebook = d.phonebook)   // rechtstreeks (wifi/VPN)
         else cfg                                   // via het tussenstation
     }
 

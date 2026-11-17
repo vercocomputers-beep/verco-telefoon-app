@@ -31,10 +31,17 @@ class PhoneService : Service() {
             .setOngoing(true)
             .setContentIntent(openApp(this))
             .build()
-        if (Build.VERSION.SDK_INT >= 34) {
-            startForeground(ID_STATUS, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL)
-        } else {
-            startForeground(ID_STATUS, n)
+        try {
+            if (Build.VERSION.SDK_INT >= 34) {
+                startForeground(ID_STATUS, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE)
+            } else {
+                startForeground(ID_STATUS, n)
+            }
+        } catch (e: Exception) {
+            // Android 14+ staat deze voorgrondservice alleen toe als de microfoon echt in gebruik is (tijdens een gesprek).
+            // Buiten een gesprek stoppen we 'm netjes i.p.v. te crashen; voor inkomende oproepen zorgt de pushmelding.
+            stopSelf()
+            return START_NOT_STICKY
         }
         return START_STICKY
     }
