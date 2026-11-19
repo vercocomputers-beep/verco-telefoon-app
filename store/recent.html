@@ -1,0 +1,76 @@
+<!doctype html><html lang="nl"><head><meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<style>
+  :root{
+    --surface:#FEF7FF; --onsurface:#1D1B20; --gray:#49454F; --blue:#5479A7;
+    --green:#1F883D; --red:#CF222E; --nav:#F3EDF7; --pill:#E8DEF8; --line:#CAC4D0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;}
+  html,body{width:562px;height:1000px;}
+  body{font-family:'Roboto',sans-serif;background:var(--surface);color:var(--onsurface);
+       display:flex;flex-direction:column;}
+  .topbar{height:94px;padding:22px 22px 0;border-bottom:1px solid var(--line);}
+  .topbar .l1{display:flex;align-items:center;gap:11px;}
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--green);flex:none;}
+  .title{font-size:21px;font-weight:700;letter-spacing:.1px;}
+  .sub{font-size:14px;color:var(--gray);margin-top:3px;margin-left:22px;}
+  .chips{display:flex;gap:10px;padding:16px 22px 6px;}
+  .chip{font-size:14px;padding:7px 15px;border-radius:9px;border:1px solid var(--line);color:var(--gray);}
+  .chip.on{background:var(--pill);border-color:var(--pill);color:#1D192B;font-weight:500;}
+  .list{flex:1;overflow:hidden;}
+  .row{display:flex;align-items:center;gap:16px;padding:15px 22px;}
+  .ricon{font-size:24px;flex:none;width:26px;text-align:center;}
+  .ricon.up{color:var(--green);} .ricon.in{color:var(--blue);} .ricon.miss{color:var(--red);}
+  .mid{flex:1;min-width:0;}
+  .name{font-size:21px;font-weight:400;color:var(--onsurface);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .meta{font-size:14px;color:var(--gray);margin-top:3px;}
+  .meta.miss{color:var(--red);}
+  .when{font-size:14px;color:var(--gray);flex:none;text-align:right;}
+  .nav{display:flex;align-items:flex-start;height:110px;background:var(--nav);border-top:1px solid var(--line);padding:20px 4px 0;}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--gray);position:relative;}
+  .tab .ic{width:60px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:17px;}
+  .tab.on .ic{background:var(--pill);}
+  .tab.on{color:#1D192B;}
+  .tab .material-icons{font-size:24px;}
+  .tab .lbl{font-size:11px;font-weight:500;}
+  .badge{position:absolute;top:-2px;left:50%;margin-left:4px;background:var(--red);color:#fff;
+         font-size:10px;font-weight:700;min-width:17px;height:17px;border-radius:9px;
+         display:flex;align-items:center;justify-content:center;padding:0 4px;}
+</style></head>
+<body>
+  <div class="topbar">
+    <div class="l1"><span class="dot"></span><span class="title">Jan Jansen · 101</span></div>
+    <div class="sub">Verbonden met de centrale</div>
+  </div>
+  <div class="chips"><span class="chip on">Alles</span><span class="chip">Gemist</span></div>
+  <div class="list">
+    <div class="row"><span class="material-icons ricon up">north_east</span>
+      <div class="mid"><div class="name">Jan Jansen</div><div class="meta">Uitgaand · 2:14</div></div>
+      <div class="when">16 nov 10:32</div></div>
+    <div class="row"><span class="material-icons ricon in">south_west</span>
+      <div class="mid"><div class="name">Petra de Vries</div><div class="meta">Inkomend · 0:48</div></div>
+      <div class="when">16 nov 09:55</div></div>
+    <div class="row"><span class="material-icons ricon miss">call_missed</span>
+      <div class="mid"><div class="name">Tom Bakker</div><div class="meta miss">Gemist</div></div>
+      <div class="when">16 nov 09:20</div></div>
+    <div class="row"><span class="material-icons ricon in">south_west</span>
+      <div class="mid"><div class="name">Balie / Receptie</div><div class="meta">Inkomend · 5:03</div></div>
+      <div class="when">15 nov 16:41</div></div>
+    <div class="row"><span class="material-icons ricon up">north_east</span>
+      <div class="mid"><div class="name">Lisa Hendriks</div><div class="meta">Uitgaand · 1:22</div></div>
+      <div class="when">15 nov 14:08</div></div>
+    <div class="row"><span class="material-icons ricon up">north_east</span>
+      <div class="mid"><div class="name">Leverancier Office BV</div><div class="meta">Uitgaand · 0:37</div></div>
+      <div class="when">15 nov 11:10</div></div>
+  </div>
+  <div class="nav">
+    <div class="tab"><div class="ic"><span class="material-icons">dialpad</span></div><span class="lbl">Kiezen</span></div>
+    <div class="tab on"><div class="ic"><span class="material-icons">history</span></div><span class="lbl">Recent</span></div>
+    <div class="tab"><div class="ic"><span class="material-icons">groups</span></div><span class="lbl">Contacten</span></div>
+    <div class="tab"><div class="ic"><span class="material-icons">star</span></div><span class="lbl">Functies</span><span class="badge">1</span></div>
+    <div class="tab"><div class="ic"><span class="material-icons">settings</span></div><span class="lbl">Instellingen</span></div>
+  </div>
+</body></html>
