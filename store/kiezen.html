@@ -1,0 +1,45 @@
+<!doctype html><html lang=nl><head><meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<style>
+:root{--surface:#FEF7FF;--onsurface:#1D1B20;--gray:#49454F;--blue:#5479A7;--green:#1F883D;--red:#CF222E;--nav:#F3EDF7;--pill:#E8DEF8;--line:#CAC4D0;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;}
+html,body{width:562px;height:1000px;}
+body{font-family:'Roboto',sans-serif;background:var(--surface);color:var(--onsurface);display:flex;flex-direction:column;}
+.topbar{height:94px;padding:22px 22px 0;border-bottom:1px solid var(--line);}
+.topbar .l1{display:flex;align-items:center;gap:11px;}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--green);flex:none;}
+.title{font-size:21px;font-weight:700;letter-spacing:.1px;}
+.sub{font-size:14px;color:var(--gray);margin-top:3px;margin-left:22px;}
+.nav{display:flex;align-items:flex-start;height:110px;background:var(--nav);border-top:1px solid var(--line);padding:20px 4px 0;}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--gray);position:relative;}
+.tab .ic{width:60px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:17px;}
+.tab.on .ic{background:var(--pill);} .tab.on{color:#1D192B;}
+.tab .material-icons{font-size:24px;} .tab .lbl{font-size:11px;font-weight:500;}
+.badge{position:absolute;top:-2px;left:50%;margin-left:4px;background:var(--red);color:#fff;font-size:10px;font-weight:700;min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+.content{flex:1;overflow:hidden;}
+</style>
+<style>
+.num{text-align:center;font-size:50px;font-weight:400;letter-spacing:2px;margin:36px 0 32px;}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:22px 34px;padding:0 60px;}
+.key{width:92px;height:92px;border-radius:50%;background:#ECECEE;display:flex;align-items:center;justify-content:center;font-size:34px;justify-self:center;}
+.callrow{display:flex;align-items:center;justify-content:center;gap:40px;margin-top:32px;}
+.callbtn{width:74px;height:74px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;}
+.callbtn .material-icons{color:#fff;font-size:34px;}
+.back{color:var(--gray);} .back .material-icons{font-size:30px;}
+</style></head><body>
+<div class="topbar"><div class="l1"><span class="dot"></span><span class="title">Jan Jansen · 101</span></div><div class="sub">Verbonden met de centrale</div></div>
+<div class="content">
+<div class="num">0612345678</div>
+<div class="pad"><div class="key">1</div><div class="key">2</div><div class="key">3</div><div class="key">4</div><div class="key">5</div><div class="key">6</div><div class="key">7</div><div class="key">8</div><div class="key">9</div><div class="key">*</div><div class="key">0</div><div class="key">#</div></div>
+<div class="callrow"><div class="callbtn"><span class="material-icons">call</span></div><span class="back"><span class="material-icons">backspace</span></span></div>
+</div>
+<div class="nav">
+ <div class="tab on"><div class="ic"><span class="material-icons">dialpad</span></div><span class="lbl">Kiezen</span></div>
+ <div class="tab "><div class="ic"><span class="material-icons">history</span></div><span class="lbl">Recent</span><span class="badge">2</span></div>
+ <div class="tab "><div class="ic"><span class="material-icons">groups</span></div><span class="lbl">Contacten</span></div>
+ <div class="tab"><div class="ic"><span class="material-icons">star</span></div><span class="lbl">Functies</span><span class="badge">1</span></div>
+ <div class="tab"><div class="ic"><span class="material-icons">settings</span></div><span class="lbl">Instellingen</span></div>
+</div>
+</body></html>

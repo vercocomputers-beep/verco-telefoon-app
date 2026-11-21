@@ -1,0 +1,8 @@
+Store-screenshots — bron
+========================
+recent.html, kiezen.html, contacten.html = de 3 telefoon-screenshots (Material-stijl,
+verzonnen namen). Pas de namen/teksten aan in de HTML en draai render.py om nieuwe
+1080x1920 PNG's (9:16) te maken voor de Google Play Store.
+
+Eenmalig: pip install playwright pillow  &&  playwright install chromium
+Daarna:   python render.py   (schrijft 02-kiezen.png, 03-contacten.png, 06-recent.png)

@@ -1,0 +1,54 @@
+<!doctype html><html lang=nl><head><meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<style>
+:root{--surface:#FEF7FF;--onsurface:#1D1B20;--gray:#49454F;--blue:#5479A7;--green:#1F883D;--red:#CF222E;--nav:#F3EDF7;--pill:#E8DEF8;--line:#CAC4D0;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;}
+html,body{width:562px;height:1000px;}
+body{font-family:'Roboto',sans-serif;background:var(--surface);color:var(--onsurface);display:flex;flex-direction:column;}
+.topbar{height:94px;padding:22px 22px 0;border-bottom:1px solid var(--line);}
+.topbar .l1{display:flex;align-items:center;gap:11px;}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--green);flex:none;}
+.title{font-size:21px;font-weight:700;letter-spacing:.1px;}
+.sub{font-size:14px;color:var(--gray);margin-top:3px;margin-left:22px;}
+.nav{display:flex;align-items:flex-start;height:110px;background:var(--nav);border-top:1px solid var(--line);padding:20px 4px 0;}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--gray);position:relative;}
+.tab .ic{width:60px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:17px;}
+.tab.on .ic{background:var(--pill);} .tab.on{color:#1D192B;}
+.tab .material-icons{font-size:24px;} .tab .lbl{font-size:11px;font-weight:500;}
+.badge{position:absolute;top:-2px;left:50%;margin-left:4px;background:var(--red);color:#fff;font-size:10px;font-weight:700;min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+.content{flex:1;overflow:hidden;}
+</style>
+<style>
+.search{margin:18px 20px 10px;display:flex;align-items:center;gap:14px;border:1px solid var(--line);border-radius:30px;padding:16px 22px;color:var(--gray);font-size:19px;}
+.search .material-icons{font-size:24px;}
+.sec{color:var(--blue);font-weight:700;font-size:16px;padding:16px 22px 6px;}
+.crow{display:flex;align-items:center;gap:18px;padding:15px 22px;}
+.cdot{width:13px;height:13px;border-radius:50%;flex:none;}
+.g{background:var(--green);} .r{background:var(--red);} .y{background:#C2BFC3;}
+.cmid{flex:1;min-width:0;} .cname{font-size:22px;} .cmeta{font-size:15px;color:var(--gray);margin-top:3px;}
+.avatar{width:34px;height:34px;border-radius:50%;background:#dfe7f2;color:var(--blue);display:flex;align-items:center;justify-content:center;flex:none;}
+.avatar .material-icons{font-size:22px;}
+.call{color:var(--green);} .call .material-icons{font-size:27px;}
+</style></head><body>
+<div class="topbar"><div class="l1"><span class="dot"></span><span class="title">Jan Jansen · 101</span></div><div class="sub">Verbonden met de centrale</div></div>
+<div class="content">
+<div class="search"><span class="material-icons">search</span>Zoek naam of nummer</div>
+<div class="sec">Collega's</div>
+<div class="crow"><span class="cdot g"></span><div class="cmid"><div class="cname">Jan Jansen</div><div class="cmeta">101 · vrij</div></div><span class="call material-icons">call</span></div>
+<div class="crow"><span class="cdot r"></span><div class="cmid"><div class="cname">Petra de Vries</div><div class="cmeta">102 · in gesprek</div></div><span class="call material-icons">call</span></div>
+<div class="crow"><span class="cdot g"></span><div class="cmid"><div class="cname">Balie / Receptie</div><div class="cmeta">100 · vrij</div></div><span class="call material-icons">call</span></div>
+<div class="crow"><span class="cdot r"></span><div class="cmid"><div class="cname">Tom Bakker</div><div class="cmeta">103 · niet storen</div></div><span class="call material-icons">call</span></div>
+<div class="crow"><span class="cdot y"></span><div class="cmid"><div class="cname">Lisa Hendriks</div><div class="cmeta">104 · niet bereikbaar</div></div><span class="call material-icons">call</span></div>
+<div class="sec">Contacten</div>
+<div class="crow"><span class="avatar"><span class="material-icons">person</span></span><div class="cmid"><div class="cname">Leverancier Office BV</div><div class="cmeta">077 466 90 00</div></div><span class="call material-icons">call</span></div>
+</div>
+<div class="nav">
+ <div class="tab "><div class="ic"><span class="material-icons">dialpad</span></div><span class="lbl">Kiezen</span></div>
+ <div class="tab "><div class="ic"><span class="material-icons">history</span></div><span class="lbl">Recent</span><span class="badge">2</span></div>
+ <div class="tab on"><div class="ic"><span class="material-icons">groups</span></div><span class="lbl">Contacten</span></div>
+ <div class="tab"><div class="ic"><span class="material-icons">star</span></div><span class="lbl">Functies</span><span class="badge">1</span></div>
+ <div class="tab"><div class="ic"><span class="material-icons">settings</span></div><span class="lbl">Instellingen</span></div>
+</div>
+</body></html>
